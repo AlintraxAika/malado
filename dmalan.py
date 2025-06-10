@@ -205,10 +205,10 @@ st.write("EM CASO DE PÓS PARTO, COLOCAR VALORES NEGATIVOS NA AFU SE ABAIXO DA C
 
 #FETAL VITAL SIGNS
 #fetus: bcf, afu, du, mov. fetal
-c1, c2, c3, c4 = st.columns([1,1,1,4])
-with c1:
-	afu = int(st.text_input("AFU:", value = "0"))
 if not postPartum:
+	c1, c2, c3, c4 = st.columns([1,1,1,4])
+	with c1:
+		afu = int(st.text_input("AFU:", value = "0"))
 	with c2:
 		bcf = st.text_input("BCF:")
 	with c3:
@@ -216,6 +216,9 @@ if not postPartum:
 	with c4:
 		movFet = st.checkbox("MOV. FETAL")
 else:
+	c1, c2, c3 = st.columns([1,2,4])
+	with c1:
+		afu = int(st.text_input("AFU:", value = "0"))
 	with c2:
 		milk = st.checkbox("AMAMENTAÇÃO")
 
