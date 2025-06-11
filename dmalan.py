@@ -70,7 +70,7 @@ if gesthyp:
 		with c6:
 			preec = st.checkbox("PRÉ-ECLÂMPSIA")
 		with c7:
-			severePreec = st.checkbox("SEVERA")
+			severePreec = st.checkbox("DETERIORAÇÃO")
 
 ##MOTHER BLOOD TYPE
 if st.checkbox("TIPO SANGUÍNEO DA MÃE DISPONÍVEL?"):
