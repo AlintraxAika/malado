@@ -115,11 +115,11 @@ if usg:
 
 #DEFINES WHICH GESTATIONAL AGE TO USE
 if usg:
-	if int(usgWeeks) < 13 and abs(gestAgeUsg[0]-gestAgeLmp[0] > 0):
+	if int( usgWeeks ) < 13 and abs( igToDays (gestAgeUsg[0],gestAgeUsg[1]) - igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 7 ):
 		gestAge = gestAgeUsg
-	elif int(usgWeeks) < 29 and abs(gestAgeUsg[0]-gestAgeLmp[0] > 1):
+	elif int( usgWeeks ) < 29 and abs( igToDays (gestAgeUsg[0],gestAgeUsg[1]) - igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 14 ):
 		gestAge = gestAgeUsg
-	elif abs(gestAgeUsg[0]-gestAgeLmp[0] > 2):
+	elif abs( igToDays (gestAgeUsg[0],gestAgeUsg[1]) - igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 21):
 		gestAge = gestAgeUsg
 	else:
 		gestAge = gestAgeLmp
@@ -255,40 +255,42 @@ if postPartum:
 	loq = st.text_input("LOQUIOS:", value="RUBROS, SEM ODOR, EM PEQUENA QUANTIDADE.")
 else:
 	tv = st.text_input("TV:", value="TOQUE VAGINAL NÃO REALIZADO.")
-ext = st.text_input("EXTREMIDADES:", value="EDEMA (+1/+4) EM MMII. SEM SINAIS DE TROMBOSE. PULSOS PRESENTES E SIMÉTRICOS.")
+ext = st.text_input("EXTREMIDADES:", value="EDEMA (+1/+4) EM MMII. TEC <3S. SEM SINAIS DE TROMBOSE. PULSOS PRESENTES E SIMÉTRICOS.")
 
 #HYPOTHESIS
 if postPartum:
-	hypothesis = f"1. PUERPÉRIO IMEDIATO DE PARTO {laborMode} REALIZADO DIA {laborDate} ÀS {laborTime}\n"
+	hypothesis = f"1. PUERPÉRIO IMEDIATO DE PARTO {laborMode} REALIZADO DIA {laborDate} ÀS {laborTime}"
 else:
 	hypothesis = f"1. GESTAÇÃO ÚNICA TÓPICA"
 	if gestAge[0] < 34:
 		hypothesis += f" PRÉ-TERMO "
-	if gestAge[0] < 37:
+	elif gestAge[0] < 37:
 		hypothesis += f" PRÉ-TERMO TARDIO "
-	if gestAge[0] < 41:
+	elif gestAge[0] < 41:
 		hypothesis += f" TERMO "
-	if gestAge[0] < 42:
+	elif gestAge[0] < 42:
 		hypothesis += f" TERMO TARDIO "
 	else:
 		hypothesis += f" PÓS-TERMO "
-	hypothesis += f"COM {gestAge[0]}S{gestAge[1]}D\n"
+	hypothesis += f"COM {gestAge[0]}S{gestAge[1]}D"
 	
-hypothesis += f". INCOMPATIBILIDADE SANGUÍNEA MATERNO-FETAL\n" if (rhmom == "+" and rhnb == "-") else ""
+hypothesis += f"\n. INCOMPATIBILIDADE SANGUÍNEA MATERNO-FETAL" if (rhmom == "+" and rhnb == "-") else ""
 if dm:	
-	hypothesis += f". DIABETES MELLITUS {dmType}\n"	
+	hypothesis += f"\n. DIABETES MELLITUS {dmType}"	
 if crhyp:
-	hypothesis += f". HAS CRÔNICA\n"
+	hypothesis += f"\n. HAS CRÔNICA"
 if gesthyp:
 	if preec:
-		hypothesis += f". PRÉ-ECLÂMPSIA"
-		hypothesis += f" COM SINAIS DE DETERIORAÇÃO CLÍNICA\n" if severePreec else "\n"
+		hypothesis += f"\n. PRÉ-ECLÂMPSIA"
+		if crhyp:
+			hypothesis += f" SOBREPOSTA"
+		hypothesis += f" COM SINAIS DE DETERIORAÇÃO CLÍNICA" if severePreec else ""
 	else:
-		hypothesis += f". HAS GESTACIONAL\n"
-hypothesis += f". TR SÍFILIS REAGENTE\n" if sif else ""
-hypothesis += f". TR HIV REAGENTE\n" if hiv else ""
-hypothesis += f". TR HCV REAGENTE\n" if hcv else ""
-hypothesis += f". TR HbsAg REAGENTE\n" if hbs else ""
+		hypothesis += f"\n. HAS GESTACIONAL"
+hypothesis += f"\n. TR SÍFILIS REAGENTE" if sif else ""
+hypothesis += f"\n. TR HIV REAGENTE" if hiv else ""
+hypothesis += f"\n. TR HCV REAGENTE" if hcv else ""
+hypothesis += f"\n. TR HbsAg REAGENTE" if hbs else ""
 
 #HISTORY
 history = f"PACIENTE, G{g}P"
@@ -300,9 +302,9 @@ if postPartum:
 history += f"ENCAMINHADA PARA _[ALA]_. SEGUE AOS CUIDADOS DA EQUIPE."
 
 #MEDICAL HISTORY
-pHist = f"DIABETES MELLITUS {dmType}" if dm and dmType != "GESTACIONAL" else "NEGA DM TIPO 1/2"
+pHist = f"DIABETES MELLITUS {dmType}" if dm and dmType != "GESTACIONAL" else "NEGA DM PRÉ-GESTACIONAL"
 pHist += f". HAS CRÔNICA." if crhyp else ". NEGA HAS CRÔNICA."
-pHist += " NEGA CIRURGIAS E INTERNAMENTOS PRÉVIOS. NEGA TRANSFUSÕES. NEGA ETILISMO E TABAGISMO."
+pHist += " NEGA TRANSFUSÕES. NEGA ETILISMO E TABAGISMO."
 
 #PROGRESS SECTION
 prog = "PACIENTE HEMODINAMICAMENTE ESTÁVEL, "
@@ -322,7 +324,7 @@ else:
 	else:
 		prog += f"DIURESE AUSENTE. "
 if bowel == "SIM":
-	prog += f"DEJEÇÕES PRESENTES. "
+	prog += f"DEJEÇÕES e FLATOS PRESENTES. "
 else:
 	if bowel == "FLATOS":
 		prog += f"DEJEÇÕES AUSENTES (FLATOS PRESENTES). "
@@ -382,8 +384,10 @@ hda = st.text_area("História da doença atual:", height=300, value=history)
 ap = st.text_area("Antecedentes pessoais:", value=pHist)
 evol = st.text_area("Evolução:", height = 200, value=prog)
 
-string = f"ID: {name}, {age} ANOS, G{g} PV{pv} PC{pc} A{a}\nADM HDM: {admDate};\nIG[DUM]: {gestAgeLmp[0]}S{gestAgeLmp[1]}D;"
-string += f" IG[USG]: {gestAgeUsg[0]}S{gestAgeUsg[1]}D;\n" if usg else "\n"
+string = f"ID: {name}, {age} ANOS, G{g} PV{pv} PC{pc} A{a}\nADM HDM: {admDate};\n"
+if not postPartum:
+	string += f"IG[DUM]: {gestAgeLmp[0]}S{gestAgeLmp[1]}D;"
+	string += f" IG[USG]: {gestAgeUsg[0]}S{gestAgeUsg[1]}D;\n" if usg else "\n"
 string += f"TS[MÃE]: {momBlood} | TS[NEONATO]: {nbBlood}\n(TESTES RÁPIDOS) SÍFILIS: "
 string += "REAGENTE" if sif else "NR"
 string += " |  HIV: "
@@ -395,7 +399,7 @@ string += "REAGENTE" if hbs else "NR"
 string += ";\n\n"
 string += "#HD:\n"
 string += hd
-string += "\n#HDA: "
+string += "\n\n#HDA: "
 string += hda
 string += "\n\n#CPN: "
 string += "\n\n#AP: "
@@ -404,7 +408,7 @@ string += "\n\n#EVOLUÇÃO: "
 string += evol
 string += "\n\n#EXAME FÍSICO:\n"
 string += exFis
-string += "\n\n#EXAMES COMPLEMENTARES:\n-LABORATÓRIO:\n\n-IMAGEM:\n"
+string += "\n#EXAMES COMPLEMENTARES:\n-LABORATÓRIO:\n\n-IMAGEM:\n"
 string += "\n#CONDUTA:\n"
 
 string = string.upper()
