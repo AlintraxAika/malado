@@ -66,7 +66,7 @@ with c3:
 	gesthyp = st.checkbox("HAS GESTACIONAL")
 if gesthyp:
 	with c5:
-		c6, c7 = st.columns([2,1])
+		c6, c7 = st.columns(2)
 		with c6:
 			preec = st.checkbox("PRÉ-ECLÂMPSIA")
 		with c7:
@@ -83,7 +83,7 @@ if st.checkbox("TIPO SANGUÍNEO DA MÃE DISPONÍVEL?"):
 			rhmom = "+"
 		else:
 			rhmom = "-"
-	momBlood = bgmom+rhmom	
+	momBlood = bgmom+rhmom
 
 #LAST MENSTRUAL PERIOD
 c1, c2, c3, c4 = st.columns(4)
