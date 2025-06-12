@@ -85,6 +85,7 @@ if st.checkbox("TIPO SANGUÍNEO DA MÃE DISPONÍVEL?"):
 			rhmom = "-"
 	momBlood = bgmom+rhmom
 
+st.write("SE DUM INCERTA, DEIXAR A DATA DE HOJE")
 #LAST MENSTRUAL PERIOD
 c1, c2, c3, c4 = st.columns(4)
 with c1:
@@ -115,16 +116,21 @@ if usg:
 
 #DEFINES WHICH GESTATIONAL AGE TO USE
 if usg:
-	if int( usgWeeks ) < 13 and abs( igToDays (gestAgeUsg[0],gestAgeUsg[1]) - igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 7 ):
+	if int( usgWeeks ) < 13 and abs( igToDays (gestAgeUsg[0],gestAgeUsg[1]) - igToDays (gestAgeLmp[0],gestAgeLmp[1]) ) > 7:
 		gestAge = gestAgeUsg
-	elif int( usgWeeks ) < 29 and abs( igToDays (gestAgeUsg[0],gestAgeUsg[1]) - igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 14 ):
+		modeChosen = "(USG 1º TRIMESTRE)"
+	elif int( usgWeeks ) < 29 and abs( igToDays (gestAgeUsg[0],gestAgeUsg[1]) - igToDays (gestAgeLmp[0],gestAgeLmp[1]) ) > 14:
 		gestAge = gestAgeUsg
-	elif abs( igToDays (gestAgeUsg[0],gestAgeUsg[1]) - igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 21):
+		modeChosen = "(USG 2º TRIMESTRE)"
+	elif abs( igToDays (gestAgeUsg[0],gestAgeUsg[1]) - igToDays (gestAgeLmp[0],gestAgeLmp[1]) ) > 21:
 		gestAge = gestAgeUsg
+		modeChosen = "(USG 3º TRIMESTRE)"
 	else:
 		gestAge = gestAgeLmp
+		modeChosen = "(DUM)"
 else:
 	gestAge = gestAgeLmp
+	modeChosen = "(DUM)"
 
 #LABOR + NEWBORN BLOOD TYPE
 if postPartum:
@@ -208,7 +214,7 @@ st.write("EM CASO DE PÓS PARTO, COLOCAR VALORES NEGATIVOS NA AFU SE ABAIXO DA C
 if not postPartum:
 	c1, c2, c3, c4 = st.columns([1,1,1,4])
 	with c1:
-		afu = int(st.text_input("AFU:", value = "0"))
+		afu = round(float(st.text_input("AFU:", value = "0")), 1)
 	with c2:
 		bcf = st.text_input("BCF:")
 	with c3:
@@ -218,7 +224,7 @@ if not postPartum:
 else:
 	c1, c2, c3 = st.columns([1,2,4])
 	with c1:
-		afu = int(st.text_input("AFU:", value = "0"))
+		afu = round(float(st.text_input("AFU:", value = "0")), 1)
 	with c2:
 		milk = st.checkbox("AMAMENTAÇÃO")
 
@@ -245,7 +251,7 @@ else:
 	abdVal = f"GRAVÍDICO, SEM DOR À PALPAÇÃO, TÔNUS UTERINO FISIOLÓGICO, DINÂMICA UTERINA "
 	abdVal += "PRESENTE. " if du else "AUSENTE. "
 	abdVal += "MOVIMENTAÇÕES FETAIS "
-	abdVal += "PRESENTES." if du else "AUSENTES."
+	abdVal += "PRESENTES." if movFet else "AUSENTES."
 	abdVal += f"BCF: {bcf} BPM | AFU: {afu} CM"
 abd = st.text_input("ABDOME:", value=abdVal)
 neur = st.text_input("NEUROLÓGICO:", value=f"GLASGOW {gcs}, SEM SINAIS DE DÉFICITS NEUROLÓGICOS FOCAIS.")
@@ -272,7 +278,7 @@ else:
 		hypothesis += f" TERMO TARDIO "
 	else:
 		hypothesis += f" PÓS-TERMO "
-	hypothesis += f"COM {gestAge[0]}S{gestAge[1]}D"
+	hypothesis += f"COM {gestAge[0]}S {gestAge[1]}D {modeChosen}"
 	
 hypothesis += f"\n. INCOMPATIBILIDADE SANGUÍNEA MATERNO-FETAL" if (rhmom == "+" and rhnb == "-") else ""
 if dm:	
@@ -296,7 +302,7 @@ hypothesis += f"\n. TR HbsAg REAGENTE" if hbs else ""
 history = f"PACIENTE, G{g}P"
 history += str(int(pv)+int(pc)-1) if postPartum else str(int(pv)+int(pc))
 gestAgeAdm = daysToIg( igToDays(gestAge[0], gestAge[1]) - nDaysBetween( admDate, date.today().strftime("%d/%m/%Y") ) )
-history += f"A{a}, EM CURSO DE IG: {gestAgeAdm[0]}S{gestAgeAdm[1]}D, DEU ENTRADA NESTE SERVIÇO DIA {admDate}, DEVIDO ________.AO EXAME FISICO ADMISSIONAL, APRESENTAVA-SE COM ________. PACIENTE FOI INTERNADA PARA ________."
+history += f"A{a}, EM CURSO DE IG: {gestAgeAdm[0]}S {gestAgeAdm[1]}D {modeChosen}, DEU ENTRADA NESTE SERVIÇO DIA {admDate}, DEVIDO ________.AO EXAME FISICO ADMISSIONAL, APRESENTAVA-SE COM ________. PACIENTE FOI INTERNADA PARA ________."
 if postPartum:
 	history += f"PARTO {laborMode} REALIZADO EM {laborDate} ÀS {laborTime} COM RETIRADA DE FETO VIVO, CEFALICO, _[SEXO]_, APGAR __, PESO ____G."
 history += f"ENCAMINHADA PARA _[ALA]_. SEGUE AOS CUIDADOS DA EQUIPE."
@@ -324,7 +330,7 @@ else:
 	else:
 		prog += f"DIURESE AUSENTE. "
 if bowel == "SIM":
-	prog += f"DEJEÇÕES e FLATOS PRESENTES. "
+	prog += f"DEJEÇÕES E FLATOS PRESENTES. "
 else:
 	if bowel == "FLATOS":
 		prog += f"DEJEÇÕES AUSENTES (FLATOS PRESENTES). "
@@ -359,6 +365,8 @@ if postPartum:
 		prog += f"AMAMENTANDO. "
 	else:
 		prog += f"SEM AMAMENTAR, [MOTIVO]. "
+else:
+	prog += f"NEGA PERDA DE LÍQUIDO E SANGRAMENTO. NEGA SINTOMAS URINÁRIOS "
 prog += f"NEGA QUEIXAS. "
 if preec:
 	prog += " RELATA SINAIS DE IMINÊNCIA DE ECLÂMPSIA: [SINAL]." if severitySigns else " NEGA SINAIS DE IMINÊNCIA DE ECLÂMPSIA."
@@ -386,8 +394,8 @@ evol = st.text_area("Evolução:", height = 200, value=prog)
 
 string = f"ID: {name}, {age} ANOS, G{g} PV{pv} PC{pc} A{a}\nADM HDM: {admDate};\n"
 if not postPartum:
-	string += f"IG[DUM]: {gestAgeLmp[0]}S{gestAgeLmp[1]}D;"
-	string += f" IG[USG]: {gestAgeUsg[0]}S{gestAgeUsg[1]}D;\n" if usg else "\n"
+	string += f"IG[DUM]: {gestAgeLmp[0]}S {gestAgeLmp[1]}D;" if igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 0 else "IG[DUM]: NÃO SABE INFORMAR;"
+	string += f" IG[USG]: {gestAgeUsg[0]}S {gestAgeUsg[1]}D;\n" if usg else "\n"
 string += f"TS[MÃE]: {momBlood} | TS[NEONATO]: {nbBlood}\n(TESTES RÁPIDOS) SÍFILIS: "
 string += "REAGENTE" if sif else "NR"
 string += " |  HIV: "
@@ -401,14 +409,15 @@ string += "#HD:\n"
 string += hd
 string += "\n\n#HDA: "
 string += hda
-string += "\n\n#CPN: "
+string += "\n\n#CPN: X CONSULTAS [SEM ALTERAÇÕES PRESSÓRICAS/COM ALTERAÇÕES PRESSÓRICAS A PARTIR DE XX SEMANAS]. GJ: ; TOTG: (JEJUM)| (1H)| (2H). SOROLOGIAS: NR."
 string += "\n\n#AP: "
 string += ap
+string += "\n\n#EM USO:\n\n#FEZ USO:\n\n#DADOS DA ENFERMAGEM:\nPA: X | X | X | X MMHG\nTAX:  |  |  |  ºC\nFC:  |  |  |  BPM\nBCF:  |  |  |  BPM"
 string += "\n\n#EVOLUÇÃO: "
 string += evol
 string += "\n\n#EXAME FÍSICO:\n"
 string += exFis
-string += "\n#EXAMES COMPLEMENTARES:\n-LABORATÓRIO:\n\n-IMAGEM:\n"
+string += "\n#EXAMES COMPLEMENTARES:\n-LABORATÓRIO:\n\n-IMAGEM:\n\n#PROGRAMAÇÃO:\n"
 string += "\n#CONDUTA:\n"
 
 string = string.upper()
