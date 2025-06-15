@@ -8,11 +8,19 @@ rhmom = ""
 momBlood = "XX"
 bgnb = ""
 rhnb = ""
-nbBlood = "XX"
+nbBlood = "AGUARDO"
 afu = 0
 preec = False
+laborDate = date.today().strftime("%d/%m/%Y")
 
 def nDaysBetween (date1, date2):
+	s1 = date1.split("/")
+	s2 = date2.split("/")
+	dateC1 = datetime.datetime(int(s1[2]),int(s1[1]),int(s1[0]))
+	dateC2 = datetime.datetime(int(s2[2]),int(s2[1]),int(s2[0]))
+	return (dateC2 - dateC1).days
+	
+def nDaysBetweenAbs (date1, date2):
 	s1 = date1.split("/")
 	s2 = date2.split("/")
 	dateC1 = datetime.datetime(int(s1[2]),int(s1[1]),int(s1[0]))
@@ -32,7 +40,7 @@ st.write("<todo texto inserido será convertido para caixa alta>")
 #QUESTIONAIRE
 ##ID + POINT-OF-CARE TESTS
 name = st.text_input("NOME:")
-c1, c2, c3, c4, c5, c6, c7, c8, c9 = st.columns([1.5,1,1,1,1,1.5,1.5,1.5,1.5])
+c1, c2, c3, c4, c5, c6, c7, c8, c9 = st.columns([1.5,1,1,1,1,1.7,1.5,1.5,1.5])
 with c1:
 	age = st.text_input("IDADE:")
 with c2:
@@ -73,7 +81,7 @@ if gesthyp:
 			preec = st.checkbox("PRÉ-ECLÂMPSIA", value=severePreec)
 
 ##MOTHER BLOOD TYPE
-if st.checkbox("TIPO SANGUÍNEO DA MÃE DISPONÍVEL?"):
+if st.checkbox("TIPO SANGUÍNEO DA MÃE DISPONÍVEL"):
 	c1, c2 = st.columns(2)
 	with c1:
 		bgmom = st.radio("TIPO:", ["O", "A", "B", "AB"], key="radio1", horizontal=True)
@@ -97,9 +105,6 @@ with c3:
 with c4:
 	usg = st.checkbox("USG DISPONÍVEL")
 
-#LMP GESTATIONAL AGE
-gestAgeLmp = daysToIg( nDaysBetween( lmpDate, date.today().strftime("%d/%m/%Y") ) )
-
 #USG
 if usg:
 	c1, c2, c3, c4, c5 = st.columns([2,1,1,1,2])
@@ -111,8 +116,54 @@ if usg:
 		usgWeeks = st.text_input("SEMANAS:", value="0")
 	with c4:
 		usgDays = st.text_input("DIAS:", value="0")
-	#USG GESTATIONAL AGE
-	gestAgeUsg = daysToIg( nDaysBetween( usgDate, date.today().strftime("%d/%m/%Y") ) + igToDays( int(usgWeeks), int(usgDays) ) )
+
+#LABOR + NEWBORN BLOOD TYPE
+if postPartum:
+	c1, c2, c3, c4, c5, c6 = st.columns([2.5,2.2,1.7,2.6,1.6,1.6])
+	with c1:
+		laborMode = st.radio("VIA:", ["VAGINAL", "CESÁREA"], key="radio3")
+	with c2:
+		laborDate = st.text_input("DATA:", value=date.today().strftime("%d/%m/%Y"))
+	with c3:
+		laborTime = st.text_input("HORA:")
+	with c4:
+		nbSex = st.radio("SEXO:", ["MASCULINO", "FEMININO"], key="nbSex")
+	with c5:
+		nbWeight = st.text_input("PESO:")
+	with c6:
+		nbApgar = st.text_input("APGAR:")
+	
+	if st.checkbox("TIPO SANGUÍNEO DO NEONATO DISPONÍVEL"):
+		c7, c8 = st.columns(2)
+		with c7:
+			bgnb = st.radio("TIPO:", ["O", "A", "B", "AB"], key="radio4", horizontal=True)
+		with c8:
+			rhnb = st.radio("Rh:", ["POSITIVO", "NEGATIVO"], key="radio5", horizontal=True)
+			if rhnb == "POSITIVO":
+				rhnb = "+"
+			else:
+				rhnb = "-"
+		nbBlood = bgnb+rhnb
+
+if postPartum:
+	#LMP GESTATIONAL AGE TO PARTUM
+	gestAgeLmp = daysToIg( nDaysBetween ( lmpDate, laborDate ) )
+	if usg:
+		#USG GESTATIONAL AGE TO PARTUM
+		gestAgeUsg = daysToIg( nDaysBetweenAbs( usgDate, laborDate ) + igToDays( int(usgWeeks), int(usgDays) ) )
+else:
+	#LMP GESTATIONAL AGE
+	gestAgeLmp = daysToIg( nDaysBetweenAbs( lmpDate, date.today().strftime("%d/%m/%Y") ) )
+
+	if usg:
+		#USG GESTATIONAL AGE
+		gestAgeUsg = daysToIg( nDaysBetweenAbs( usgDate, date.today().strftime("%d/%m/%Y") ) + igToDays( int(usgWeeks), int(usgDays) ) )
+
+c1, c2 = st.columns(2)
+with c1:
+	st.write(f"IG DUM: {gestAgeLmp[0]}S {gestAgeLmp[1]}D ({lmpDate})" if igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 0 else "IG DUM : NÃO SABE INFORMAR")
+with c2:
+	st.write(f"IG USG: {gestAgeUsg[0]}S {gestAgeUsg[1]}D ({usgDate}; {usgWeeks}D {usgDays}D)" if usg else "IG USG : INDISPONÍVEL")
 
 #DEFINES WHICH GESTATIONAL AGE TO USE
 if usg:
@@ -131,27 +182,6 @@ if usg:
 else:
 	gestAge = gestAgeLmp
 	modeChosen = "(DUM)"
-
-#LABOR + NEWBORN BLOOD TYPE
-if postPartum:
-	c1, c2, c3 = st.columns([2,1,1])
-	with c1:
-		laborMode = st.radio("VIA:", ["VAGINAL", "CESÁREA"], key="radio3", horizontal=True)
-	with c2:
-		laborDate = st.text_input("DATA:", value=date.today().strftime("%d/%m/%Y"))
-	with c3:
-		laborTime = st.text_input("HORA:")
-	if st.checkbox("TIPO SANGUÍNEO DO NEONATO DISPONÍVEL?"):
-		c4, c5 = st.columns(2)
-		with c4:
-			bgnb = st.radio("TIPO:", ["O", "A", "B", "AB"], key="radio4", horizontal=True)
-		with c5:
-			rhnb = st.radio("Rh:", ["POSITIVO", "NEGATIVO"], key="radio5", horizontal=True)
-			if rhnb == "POSITIVO":
-				rhnb = "+"
-			else:
-				rhnb = "-"
-		nbBlood = bgnb+rhnb
 
 #DIURESIS
 #mark: diu, svd, - bh, qt - sne, vm
@@ -280,7 +310,7 @@ else:
 		hypothesis += f" PÓS-TERMO "
 	hypothesis += f"COM {gestAge[0]}S {gestAge[1]}D {modeChosen}"
 	
-hypothesis += f"\n. INCOMPATIBILIDADE SANGUÍNEA MATERNO-FETAL" if (rhmom == "+" and rhnb == "-") else ""
+hypothesis += f"\n. INCOMPATIBILIDADE SANGUÍNEA MATERNO-FETAL" if (rhmom == "-" and rhnb == "+") else ""
 if dm:	
 	hypothesis += f"\n. DIABETES MELLITUS {dmType}"	
 if crhyp:
@@ -300,12 +330,14 @@ hypothesis += f"\n. TR HbsAg REAGENTE" if hbs else ""
 
 #HISTORY
 history = f"PACIENTE, G{g}P"
-history += str(int(pv)+int(pc)-1) if postPartum else str(int(pv)+int(pc))
-gestAgeAdm = daysToIg( igToDays(gestAge[0], gestAge[1]) - nDaysBetween( admDate, date.today().strftime("%d/%m/%Y") ) )
-history += f"A{a}, EM CURSO DE IG: {gestAgeAdm[0]}S {gestAgeAdm[1]}D {modeChosen}, DEU ENTRADA NESTE SERVIÇO DIA {admDate}, DEVIDO ________.AO EXAME FISICO ADMISSIONAL, APRESENTAVA-SE COM ________. PACIENTE FOI INTERNADA PARA ________."
+history += str(int(pv)+int(pc)-1) if postPartum and not nDaysBetween(laborDate, admDate) > 0 else str(int(pv)+int(pc))
+gestAgeAdm = daysToIg( igToDays(gestAge[0], gestAge[1]) - nDaysBetweenAbs( admDate, date.today().strftime("%d/%m/%Y") ) )
+history += f"A{a}, "
+history += f"PUERPERA" if postPartum and nDaysBetween(laborDate, admDate) > 0 else f"EM CURSO DE IG: {gestAgeAdm[0]}S {gestAgeAdm[1]}D {modeChosen}"
+history += f", DEU ENTRADA NESTE SERVIÇO DIA {admDate}, [MOTIVO]. AO EXAME FISICO ADMISSIONAL, APRESENTAVA-SE COM [EXAME FÍSICO ADMISSIONAL]. PACIENTE FOI INTERNADA PARA [OBJETIVO INTERNAMENTO]. "
 if postPartum:
-	history += f"PARTO {laborMode} REALIZADO EM {laborDate} ÀS {laborTime} COM RETIRADA DE FETO VIVO, CEFALICO, _[SEXO]_, APGAR __, PESO ____G."
-history += f"ENCAMINHADA PARA _[ALA]_. SEGUE AOS CUIDADOS DA EQUIPE."
+	history += f"PARTO {laborMode} REALIZADO EM {laborDate} ÀS {laborTime} COM RETIRADA DE FETO VIVO, CEFALICO, {nbSex}, APGAR {nbApgar}, PESO {nbWeight} GRAMAS. "
+history += f"ENCAMINHADA PARA [ALA]. SEGUE AOS CUIDADOS DA EQUIPE."
 
 #MEDICAL HISTORY
 pHist = f"DIABETES MELLITUS {dmType}" if dm and dmType != "GESTACIONAL" else "NEGA DM PRÉ-GESTACIONAL"
@@ -317,11 +349,11 @@ prog = "PACIENTE HEMODINAMICAMENTE ESTÁVEL, "
 if vm:
 	prog += "EM USO DE VENTILAÇÃO MECÂNICA (MODO: ; PINSP/VOL: ; FIO2: ; PEEP: )."
 elif o2:
-	prog += "EM USO DE ______ (__ L/MIN)."
+	prog += "EM USO DE [APARELHO] ([QUANTIDADE] L/MIN)."
 else:
 	prog += "RESPIRANDO EM AR AMBIENTE, SEM DESCONFORTO RESPIRATÓRIO. "
-prog += "SEM USO DE DROGA VASOATIVA. " if not dva else "EM USO DE ____ (__/MIN). "
-prog += "SEM SEDAÇÃO. " if not sed else "SEDADA COM ____. "
+prog += "SEM USO DE DROGA VASOATIVA. " if not dva else "EM USO DE [DVA] ([QUANTIDADE]). "
+prog += "SEM SEDAÇÃO. " if not sed else "SEDADA COM [SEDAÇÃO]. "
 if svd:
 	prog += f"DIURESE EM SVD ({diuQt} ML/24H; BH: {bh}). "
 else:
@@ -342,7 +374,7 @@ if sne:
 	elif diet == "SIM":
 		prog += f"EM USO DE SNE, SEM RETORNOS. "
 	else:
-		prog += f"EM USO DE SNE, COM RETORNO DE ____ML. "
+		prog += f"EM USO DE SNE, COM RETORNO DE [QUANTIDADE] ML. "
 else:
 	if diet == "ZERO":
 		prog += f"EM DIETA ZERO. "
@@ -351,7 +383,7 @@ else:
 	else:
 		prog += f"ACEITAÇÃO RUIM DE DIETA VIA ORAL. "
 if emesis:
-	prog += f"APRESENTA ÊMESE (_ EPISÓDIOS). "
+	prog += f"APRESENTA ÊMESE ([QUANTIDADE] EPISÓDIOS). "
 elif nausea:
 	prog += f"APRESENTA NÁUSEAS. "
 else:
@@ -392,11 +424,13 @@ hda = st.text_area("História da doença atual:", height=300, value=history)
 ap = st.text_area("Antecedentes pessoais:", value=pHist)
 evol = st.text_area("Evolução:", height = 200, value=prog)
 
-string = f"ID: {name}, {age} ANOS, G{g} PV{pv} PC{pc} A{a}\nADM HDM: {admDate};\n"
-if not postPartum:
-	string += f"IG[DUM]: {gestAgeLmp[0]}S {gestAgeLmp[1]}D;" if igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 0 else "IG[DUM]: NÃO SABE INFORMAR;"
-	string += f" IG[USG]: {gestAgeUsg[0]}S {gestAgeUsg[1]}D;\n" if usg else "\n"
-string += f"TS[MÃE]: {momBlood} | TS[NEONATO]: {nbBlood}\n(TESTES RÁPIDOS) SÍFILIS: "
+string = f"ID: {name}, {age} ANOS, G{g} PV{pv} PC{pc} A{a}\nADM HDM: {admDate}\n"
+string += f"(NEONATO) " if postPartum else ""
+string += f"IG DUM: {gestAgeLmp[0]}S {gestAgeLmp[1]}D ({lmpDate})" if igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 0 else "IG DUM: NÃO SABE INFORMAR"
+string += f" | IG USG: {gestAgeUsg[0]}S {gestAgeUsg[1]}D ({usgDate}; {usgWeeks}D {usgDays}D)\n" if usg else "\n"
+string += f"TS MÃE: {momBlood}"
+string += f" | TS NEONATO: {nbBlood}\n" if postPartum else "\n"
+string += "(TESTES RÁPIDOS) SÍFILIS: "
 string += "REAGENTE" if sif else "NR"
 string += " |  HIV: "
 string += "REAGENTE" if hiv else "NR"
@@ -404,7 +438,7 @@ string += " |  HCV: "
 string += "REAGENTE" if hcv else "NR"
 string += " |  HbsAg: "
 string += "REAGENTE" if hbs else "NR"
-string += ";\n\n"
+string += "\n\n"
 string += "#HD:\n"
 string += hd
 string += "\n\n#HDA: "
