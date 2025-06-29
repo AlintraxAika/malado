@@ -11,6 +11,7 @@ rhnb = ""
 nbBlood = "AGUARDO"
 afu = 0
 preec = False
+sne = False
 laborDate = date.today().strftime("%d/%m/%Y")
 
 def nDaysBetween (date1, date2):
@@ -33,8 +34,8 @@ def igToDays (weeks, days):
 def daysToIg (days):
 	return [math.floor(days/7), days%7]
 
-st.header("📝 EVOLUÇÃO DOM MALADO")
-st.subheader("🐁exclusive 4 ratchex🐀")
+st.header("📝 EVOLUÇÃO DOM MALAN")
+st.subheader("🐁🐀")
 st.write("<todo texto inserido será convertido para caixa alta>")
 
 #QUESTIONAIRE
@@ -72,7 +73,7 @@ with c2:
 	crhyp = st.checkbox("HAS CRÔNICA")
 with c3:
 	gesthyp = st.checkbox("HAS GESTACIONAL")
-if gesthyp:
+if gesthyp or crhyp:
 	with c5:
 		c6, c7 = st.columns(2)
 		with c6:
@@ -81,11 +82,16 @@ if gesthyp:
 			preec = st.checkbox("PRÉ-ECLÂMPSIA", value=severePreec)
 
 ##MOTHER BLOOD TYPE
-if st.checkbox("TIPO SANGUÍNEO DA MÃE DISPONÍVEL"):
-	c1, c2 = st.columns(2)
-	with c1:
+c1, c2 = st.columns(2)
+with c1:
+	disp = st.checkbox("TIPO SANGUÍNEO DA MÃE DISPONÍVEL")
+with c2:
+	icu = st.checkbox("UTI")
+if disp:
+	c3, c4 = st.columns(2)
+	with c3:
 		bgmom = st.radio("TIPO:", ["O", "A", "B", "AB"], key="radio1", horizontal=True)
-	with c2:
+	with c4:
 		rhmom = st.radio("Rh:", ["POSITIVO", "NEGATIVO"], key="radio2", horizontal=True)
 		if rhmom == "POSITIVO":
 			rhmom = "+"
@@ -101,7 +107,7 @@ with c1:
 with c2:
 	admDate = st.text_input("DATA ADMISSÃO:", value=date.today().strftime("%d/%m/%Y"))
 with c3:
-	postPartum = st.checkbox("PUERPERA")
+	postPartum = st.checkbox("PUÉRPERA")
 with c4:
 	usg = st.checkbox("USG DISPONÍVEL")
 
@@ -189,16 +195,18 @@ c1, c2, c3, c4, c5, c6 = st.columns([1,1,1,1,1,1])
 with c1:
 	svd = st.checkbox("SVD")
 with c2:
-	diu = st.checkbox("DIURESE", value=svd)
+	diu = st.checkbox("DIURESE", value=True)
 if svd:
 	with c3:
 		diuQt = st.text_input("ML:")
 	with c4:
 		bh = st.text_input("BH:")
 with c5:
-	sne = st.checkbox("SNE")
+	if icu:
+		sne = st.checkbox("SNE")
 with c6:
-	vm = st.checkbox("VM")
+	if icu:
+		vm = st.checkbox("VM")
 
 #DIET + NAUSEA
 c1, c2, c3 = st.columns([3,1,1])
@@ -215,9 +223,10 @@ c1, c2, c3 = st.columns([3,1,1])
 with c1:
 	bowel = st.radio("DEJEÇÕES:", ["SIM", "FLATOS", "NÃO"], key="radioBowel", horizontal=True)
 with c2:
-	walk = st.checkbox("DEAMBULA")
+	walk = st.checkbox("DEAMBULA", value=True)
 with c3:
-	sed = st.checkbox("SEDAÇÃO")
+	if icu:
+		sed = st.checkbox("SEDAÇÃO")
 
 #VITAL SIGNS
 #box: pa, fc, spo, fr, gcs, o2, dva
@@ -225,24 +234,26 @@ c1, c2, c3, c4, c5, c6, c7, c8, c9 = st.columns(9)
 with c1:
 	pa = st.text_input("PA:")
 with c2:
-	fc = st.text_input("FC:")
+	fc = st.text_input("FC:", value="80")
 with c3:
-	spo2 = st.text_input("SpO2:")
+	spo2 = st.text_input("SpO2:", value="99")
 with c4:
-	fr = st.text_input("FR:")
+	fr = st.text_input("FR:", value="16")
 with c7:
 	gcs = st.text_input("GCS:", value="15")
 with c8:
-	o2 = st.checkbox("O2", value=vm)
+	if icu:
+		o2 = st.checkbox("O2", value=vm)
 with c9:
-	dva = st.checkbox("DVA")
+	if icu:
+		dva = st.checkbox("DVA")
 
 st.write("EM CASO DE PÓS PARTO, COLOCAR VALORES NEGATIVOS NA AFU SE ABAIXO DA CICATRIZ UMBILICAL")
 
 #FETAL VITAL SIGNS
 #fetus: bcf, afu, du, mov. fetal
 if not postPartum:
-	c1, c2, c3, c4 = st.columns([1,1,1,4])
+	c1, c2, c3, c4, c5 = st.columns([1,1,1,3,1])
 	with c1:
 		afu = round(float(st.text_input("AFU:", value = "0")), 1)
 	with c2:
@@ -250,16 +261,19 @@ if not postPartum:
 	with c3:
 		du = st.checkbox("DU")
 	with c4:
-		movFet = st.checkbox("MOV. FETAL")
+		movFet = st.checkbox("MOV. FETAL", value=True)
 else:
 	c1, c2, c3 = st.columns([1,2,4])
 	with c1:
 		afu = round(float(st.text_input("AFU:", value = "0")), 1)
 	with c2:
-		milk = st.checkbox("AMAMENTAÇÃO")
+		milk = st.checkbox("AMAMENTAÇÃO", value=True)
+	with c3:
+		if postPartum:
+			ltb = st.checkbox("LAQUEADURA")
 
 #box+: eminencia, >fio2, pinsp, peep,< ou >qtO2<
-if preec:
+if crhyp or gesthyp:
 	severitySigns = st.checkbox("SINAIS DE IMINÊNCIA DE ECLÂMPSIA")
 
 
@@ -269,7 +283,9 @@ mamas = st.text_input("MAMAS:", value="MAMAS FLÁCIDAS, SEM FISSURAS OU SINAIS F
 cv = st.text_input("CARDIOVASCULAR:", value=f"RITMO CARDÍACO REGULAR EM 2 TEMPOS, BULHAS NORMOFONÉTICAS, SEM SOPROS, CLIQUES OU ESTALIDOS. PA: {pa} MMHG | FC: {fc} BPM")
 ap = st.text_input("PULMONAR:", value=f"MURMÚRIO VESICULAR PRESENTE EM AMBOS HEMITÓRAX, SEM RUÍDOS ADVENTÍCIOS. SpO2: {spo2}% | FR: {fr} IRPM")
 if postPartum:
-	abdVal = f"SEMIGLOBOSO, RUÍDOS HIDROAÉREOS PRESENTES, DEPRESSÍVEL, DOLOROSO À PALPAÇÃO PROFUNDA EM REGIÃO SUPRAPÚBICA, SEM SINAIS DE IRRITAÇÃO PERITONEAL, ÚTERO CONTRAÍDO "
+	abdVal = f"SEMIGLOBOSO, RUÍDOS HIDROAÉREOS PRESENTES, DEPRESSÍVEL, "
+	abdVal += f"INDOLOR À PALPAÇÃO" if laborMode == "VAGINAL" else "DOLOROSO À PALPAÇÃO PROFUNDA EM REGIÃO SUPRAPÚBICA"
+	abdVal += f", SEM SINAIS DE IRRITAÇÃO PERITONEAL, ÚTERO CONTRAÍDO "
 	if afu > 0:
 		abdVal += f"{afu} CM ACIMA DA CICATRIZ UMBILICAL."
 	elif afu < 0:
@@ -278,7 +294,7 @@ if postPartum:
 	else:
 		abdVal += f"NO NÍVEL DA CICATRIZ UMBILICAL."
 else:
-	abdVal = f"GRAVÍDICO, RUÍDOS HIDROAÉREOS PRESENTES, SEM DOR À PALPAÇÃO, TÔNUS UTERINO FISIOLÓGICO, DINÂMICA UTERINA "
+	abdVal = f"GRAVÍDICO, RUÍDOS HIDROAÉREOS PRESENTES, INDOLOR À PALPAÇÃO, TÔNUS UTERINO FISIOLÓGICO, DINÂMICA UTERINA "
 	abdVal += "PRESENTE. " if du else "AUSENTE. "
 	abdVal += "MOVIMENTAÇÕES FETAIS "
 	abdVal += "PRESENTES." if movFet else "AUSENTES."
@@ -286,7 +302,7 @@ else:
 abd = st.text_input("ABDOME:", value=abdVal)
 neur = st.text_input("NEUROLÓGICO:", value=f"GLASGOW {gcs}, SEM SINAIS DE DÉFICITS NEUROLÓGICOS FOCAIS.")
 if postPartum:
-	if laborMode == "CESÁREA":
+	if laborMode == "CESÁREA" or ltb:
 		fo = st.text_input("FO:", value="FERIDA OPERATÓRIA LIMPA E SEM SINAIS FLOGÍSTICOS.")
 	loq = st.text_input("LOQUIOS:", value="RUBROS, SEM ODOR, EM PEQUENA QUANTIDADE.")
 else:
@@ -296,6 +312,8 @@ ext = st.text_input("EXTREMIDADES:", value="EDEMA (+1/+4) EM MMII. TEC <3S. SEM 
 #HYPOTHESIS
 if postPartum:
 	hypothesis = f"1. PUERPÉRIO IMEDIATO DE PARTO {laborMode} REALIZADO DIA {laborDate} ÀS {laborTime}"
+	if ltb:
+		hypothesis += f"\n2. PO LAQUEADURA"
 else:
 	hypothesis = f"1. GESTAÇÃO ÚNICA TÓPICA"
 	if gestAge[0] < 34:
@@ -314,12 +332,14 @@ hypothesis += f"\n. INCOMPATIBILIDADE SANGUÍNEA MATERNO-FETAL" if (rhmom == "-"
 if dm:	
 	hypothesis += f"\n. DIABETES MELLITUS {dmType}"	
 if crhyp:
-	hypothesis += f"\n. HAS CRÔNICA"
-if gesthyp:
+	if preec:
+		hypothesis += f"\n. PRÉ-ECLÂMPSIA SOBREPOSTA"
+		hypothesis += f" COM SINAIS DE DETERIORAÇÃO CLÍNICA" if severePreec else ""
+	else:
+		hypothesis += f"\n. HAS CRÔNICA"
+elif gesthyp:
 	if preec:
 		hypothesis += f"\n. PRÉ-ECLÂMPSIA"
-		if crhyp:
-			hypothesis += f" SOBREPOSTA"
 		hypothesis += f" COM SINAIS DE DETERIORAÇÃO CLÍNICA" if severePreec else ""
 	else:
 		hypothesis += f"\n. HAS GESTACIONAL"
@@ -333,7 +353,7 @@ history = f"PACIENTE, G{g}P"
 history += str(int(pv)+int(pc)-1) if postPartum and not nDaysBetween(laborDate, admDate) > 0 else str(int(pv)+int(pc))
 gestAgeAdm = daysToIg( igToDays(gestAge[0], gestAge[1]) - nDaysBetweenAbs( admDate, date.today().strftime("%d/%m/%Y") ) )
 history += f"A{a}, "
-history += f"PUERPERA" if postPartum and nDaysBetween(laborDate, admDate) > 0 else f"EM CURSO DE IG: {gestAgeAdm[0]}S {gestAgeAdm[1]}D {modeChosen}"
+history += f"PUÉRPERA" if postPartum and nDaysBetween(laborDate, admDate) > 0 else f"EM CURSO DE IG: {gestAgeAdm[0]}S {gestAgeAdm[1]}D {modeChosen}"
 history += f", DEU ENTRADA NESTE SERVIÇO DIA {admDate}, [MOTIVO]. AO EXAME FISICO ADMISSIONAL, APRESENTAVA-SE COM [EXAME FÍSICO ADMISSIONAL]. PACIENTE FOI INTERNADA PARA [OBJETIVO INTERNAMENTO]. "
 if postPartum:
 	history += f"PARTO {laborMode} REALIZADO EM {laborDate} ÀS {laborTime} COM RETIRADA DE FETO VIVO, CEFALICO, {nbSex}, APGAR {nbApgar}, PESO {nbWeight} GRAMAS. "
@@ -346,14 +366,17 @@ pHist += " NEGA TRANSFUSÕES. NEGA ETILISMO E TABAGISMO."
 
 #PROGRESS SECTION
 prog = "PACIENTE HEMODINAMICAMENTE ESTÁVEL, "
-if vm:
-	prog += "EM USO DE VENTILAÇÃO MECÂNICA (MODO: ; PINSP/VOL: ; FIO2: ; PEEP: )."
-elif o2:
-	prog += "EM USO DE [APARELHO] ([QUANTIDADE] L/MIN)."
+if icu:
+	if vm:
+		prog += "EM USO DE VENTILAÇÃO MECÂNICA (MODO: ; PINSP/VOL: ; FIO2: ; PEEP: )."
+	elif o2:
+		prog += "EM USO DE [APARELHO] ([QUANTIDADE] L/MIN)."
+	else:
+		prog += "RESPIRANDO EM AR AMBIENTE, SEM DESCONFORTO RESPIRATÓRIO. "
+	prog += "SEM USO DE DROGA VASOATIVA. " if not dva else "EM USO DE [DVA] ([QUANTIDADE]). "
+	prog += "SEM SEDAÇÃO. " if not sed else "SEDADA COM [SEDAÇÃO]. "
 else:
 	prog += "RESPIRANDO EM AR AMBIENTE, SEM DESCONFORTO RESPIRATÓRIO. "
-prog += "SEM USO DE DROGA VASOATIVA. " if not dva else "EM USO DE [DVA] ([QUANTIDADE]). "
-prog += "SEM SEDAÇÃO. " if not sed else "SEDADA COM [SEDAÇÃO]. "
 if svd:
 	prog += f"DIURESE EM SVD ({diuQt} ML/24H; BH: {bh}). "
 else:
@@ -387,7 +410,7 @@ if emesis:
 elif nausea:
 	prog += f"APRESENTA NÁUSEAS. "
 else:
-	prog += f"NEGA NAUSEA E VÔMITOS. "
+	prog += f"NEGA NÁUSEA E VÔMITOS. "
 if walk:
 	prog += f"DEAMBULA SEM DIFICULDADES. "
 else:
@@ -400,7 +423,7 @@ if postPartum:
 else:
 	prog += f"NEGA PERDA DE LÍQUIDO E SANGRAMENTO. NEGA SINTOMAS URINÁRIOS. "
 prog += f"NEGA OUTRAS QUEIXAS. "
-if preec:
+if crhyp or gesthyp:
 	prog += " RELATA SINAIS DE IMINÊNCIA DE ECLÂMPSIA: [SINAL]." if severitySigns else " NEGA SINAIS DE IMINÊNCIA DE ECLÂMPSIA."
 
 #PHYSICAL EXAM
@@ -421,11 +444,12 @@ exFis += "EXTREMIDADES: "+ext+"\n"
 #TEXT AREAS
 hd = st.text_area("Hipóteses diagnósticas:", value=hypothesis)
 hda = st.text_area("História da doença atual:", height=300, value=history)
+cpn = st.text_area("Cartão pré-natal:", value="X CONSULTAS [SEM ALTERAÇÕES PRESSÓRICAS/COM ALTERAÇÕES PRESSÓRICAS A PARTIR DE XX SEMANAS]. GJ: ; TOTG: (JEJUM)| (1H)| (2H). SOROLOGIAS: NR.")
 ap = st.text_area("Antecedentes pessoais:", value=pHist)
 evol = st.text_area("Evolução:", height = 200, value=prog)
 
 string = f"ID: {name}, {age} ANOS, G{g} PV{pv} PC{pc} A{a}\nADM HDM: {admDate}\n"
-string += f"(NEONATO) " if postPartum else ""
+string += f"(NO PARTO) " if postPartum else ""
 string += f"IG DUM: {gestAgeLmp[0]}S {gestAgeLmp[1]}D ({lmpDate})" if igToDays (gestAgeLmp[0],gestAgeLmp[1]) > 0 else "IG DUM: NÃO SABE INFORMAR"
 string += f" | IG USG: {gestAgeUsg[0]}S {gestAgeUsg[1]}D ({usgDate}; {usgWeeks}D {usgDays}D)\n" if usg else "\n"
 string += f"TS MÃE: {momBlood}"
@@ -443,17 +467,20 @@ string += "#HD:\n"
 string += hd
 string += "\n\n#HDA: "
 string += hda
-string += "\n\n#CPN: X CONSULTAS [SEM ALTERAÇÕES PRESSÓRICAS/COM ALTERAÇÕES PRESSÓRICAS A PARTIR DE XX SEMANAS]. GJ: ; TOTG: (JEJUM)| (1H)| (2H). SOROLOGIAS: NR."
+string += "\n\n#CPN: "
+string += cpn
 string += "\n\n#AP: "
 string += ap
-string += "\n\n#EM USO:\n\n#FEZ USO:\n\n#DADOS DA ENFERMAGEM:\nPA: X | X | X | X MMHG\nTAX:  |  |  |  ºC\nFC:  |  |  |  BPM\nBCF:  |  |  |  BPM"
+string += "\n\n#EM USO:\n1. DIETA LIVRE\n2. SULFATO FERROSO PROFILÁTICO\n3. SINTOMÁTICOS\n"
+string += "\n#FEZ USO:\n\n#DADOS DA ENFERMAGEM:\nPA: X | X | X | X MMHG\nTAX: SEM DISTERMIAS\nFC:  |  |  |  BPM\nBCF:  |  |  |  BPM"
 string += "\n\n#EVOLUÇÃO: "
 string += evol
 string += "\n\n#EXAME FÍSICO:\n"
 string += exFis
-string += "\n#EXAMES COMPLEMENTARES:\n-LABORATÓRIO:\n\n-IMAGEM:\n\n#PROGRAMAÇÃO:\n"
+string += "\n#EXAMES COMPLEMENTARES:\n-LABORATÓRIO:\n\n-IMAGEM:\n\n#MÉTODO CONTRACEPTIVO DE ESCOLHA:\n\n#PROGRAMAÇÃO:\n"
 string += "\n#CONDUTA:\n"
 
 string = string.upper()
 st.subheader("🧾 EVOLUÇÃO:")
+st.write("Obs: todo texto abaixo será automaticamente apagado e reescrito caso haja alguma edição nos campos acima")
 st.text_area("TEXTO:", height = 500, value = string)
